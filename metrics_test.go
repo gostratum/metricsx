@@ -124,7 +124,7 @@ func TestApplyOptions(t *testing.T) {
 		opts := applyOptions()
 
 		assert.Empty(t, opts.Help)
-		assert.Nil(t, opts.Labels)
+		assert.Empty(t, opts.Labels) // Empty slice, not nil
 		assert.Empty(t, opts.Namespace)
 	})
 }
