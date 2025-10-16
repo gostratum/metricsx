@@ -10,11 +10,10 @@ import (
 	"github.com/gostratum/core/logx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func getTestLogger() logx.Logger {
-	return logx.ProvideAdapter(zap.NewNop())
+	return logx.NewNoopLogger()
 }
 
 func TestPrometheusProvider(t *testing.T) {
