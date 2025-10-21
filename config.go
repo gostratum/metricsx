@@ -49,3 +49,22 @@ func NewConfig(loader configx.Loader) (Config, error) {
 	}
 	return cfg, nil
 }
+
+// Sanitize returns a copy of the metrics Config. There are typically no secrets
+// in metrics config, but this method preserves the pattern across modules.
+func (c *Config) Sanitize() *Config {
+	out := *c
+	// PrometheusConfig contains no secret fields by default; shallow copy is sufficient
+	out.Prometheus = c.Prometheus
+	return &out
+}
+
+// ConfigSummary returns a small diagnostic map safe for logging.
+func (c *Config) ConfigSummary() map[string]any {
+	return map[string]any{
+		"enabled":   c.Enabled,
+		"provider":  c.Provider,
+		"prom_path": c.Prometheus.Path,
+		"prom_port": c.Prometheus.Port,
+	}
+}

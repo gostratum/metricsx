@@ -6,6 +6,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMetricsSanitizeAndSummary(t *testing.T) {
+	cfg := Config{
+		Enabled:  true,
+		Provider: "prometheus",
+		Prometheus: PrometheusConfig{
+			Path: "/metrics",
+			Port: 9090,
+		},
+	}
+
+	s := cfg.Sanitize()
+	if s == &cfg {
+		t.Fatalf("Sanitize must return a copy")
+	}
+
+	sum := cfg.ConfigSummary()
+	if sum["provider"] != "prometheus" {
+		t.Fatalf("unexpected provider in summary")
+	}
+}
+
 func TestConfigStructure(t *testing.T) {
 	t.Run("config has correct prefix", func(t *testing.T) {
 		cfg := Config{}
