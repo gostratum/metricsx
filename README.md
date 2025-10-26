@@ -463,3 +463,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 - [`httpx`](../httpx/README.md) - HTTP server with automatic metrics
 - [`dbx`](../dbx/README.md) - Database with automatic query metrics
 - [`tracingx`](../tracingx/README.md) - Distributed tracing
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a complete list of changes.

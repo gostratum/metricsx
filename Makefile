@@ -1,4 +1,7 @@
 .PHONY: test test-coverage lint fmt vet tidy clean
+.PHONY: help test test-coverage lint clean install-tools
+.PHONY: version validate-version update-deps bump-patch bump-minor bump-major
+.PHONY: release release-dry-run release-patch release-minor release-major
 
 # Go parameters
 GOCMD=go
@@ -16,29 +19,36 @@ COVERAGE_HTML=coverage.html
 
 all: test
 
+
 # Run tests
 test:
 	@echo "Running tests..."
-	@$(GOTEST) -v -race -timeout $(TEST_TIMEOUT) ./...
+	go test -v -race ./...
 
 # Run tests with coverage
 test-coverage:
 	@echo "Running tests with coverage..."
-	@$(GOTEST) -v -race -timeout $(TEST_TIMEOUT) -coverprofile=$(COVERAGE_FILE) -covermode=atomic ./...
-	@echo "Coverage report:"
-	@$(GOCMD) tool cover -func=$(COVERAGE_FILE)
+	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
 
 # Generate HTML coverage report
 coverage-html: test-coverage
 	@echo "Generating HTML coverage report..."
 	@$(GOCMD) tool cover -html=$(COVERAGE_FILE) -o $(COVERAGE_HTML)
 	@echo "Coverage report generated: $(COVERAGE_HTML)"
-
-# Run linter
+# Run linters
 lint:
-	@echo "Running linter..."
-	@command -v golangci-lint >/dev/null 2>&1 || { echo "golangci-lint not installed. Install: https://golangci-lint.run/usage/install/"; exit 1; }
-	@golangci-lint run ./...
+	@echo "Running linters..."
+	@GOLANGCI_BIN=$(go env GOPATH)/bin/golangci-lint; \
+	if [ -x "$GOLANGCI_BIN" ]; then \
+		"$GOLANGCI_BIN" run ./...; \
+	elif command -v golangci-lint >/dev/null 2>&1; then \
+		golangci-lint run ./...; \
+	else \
+		echo "golangci-lint not installed. Run: make install-tools"; exit 1; \
+	fi
+
 
 # Format code
 fmt:
@@ -58,22 +68,85 @@ tidy:
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-	@$(GOCLEAN)
-	@rm -f $(COVERAGE_FILE) $(COVERAGE_HTML)
-
+	rm -f coverage.out coverage.html
+	go clean -cache
 # Run all checks (format, vet, lint, test)
 check: fmt vet lint test
 
-# Help
+# Get current version
+VERSION := $(shell cat .version 2>/dev/null || echo "0.0.0")
+
+# Default target
 help:
 	@echo "Available targets:"
-	@echo "  test            - Run tests"
-	@echo "  test-coverage   - Run tests with coverage"
-	@echo "  coverage-html   - Generate HTML coverage report"
-	@echo "  lint            - Run linter"
-	@echo "  fmt             - Format code"
-	@echo "  vet             - Run go vet"
-	@echo "  tidy            - Tidy dependencies"
-	@echo "  clean           - Clean build artifacts"
-	@echo "  check           - Run all checks"
-	@echo "  help            - Show this help"
+	@echo ""
+	@echo "Testing & Quality (httpx module):"
+	@echo "  test              - Run httpx unit tests"
+	@echo "  test-coverage     - Run httpx tests with coverage"
+	@echo "  lint              - Run linters for httpx module"
+	@echo "  clean             - Clean httpx build artifacts"
+	@echo ""
+	@echo "Version Management (httpx module):"
+	@echo "  version           - Show current httpx module version"
+	@echo "  validate-version  - Validate .version file for httpx"
+	@echo "  update-deps       - Update gostratum dependencies used by httpx"
+	@echo "  bump-patch        - Bump httpx patch version (0.0.X)"
+	@echo "  bump-minor        - Bump httpx minor version (0.X.0)"
+	@echo "  bump-major        - Bump httpx major version (X.0.0)"
+	@echo ""
+	@echo "Release Management (httpx module):"
+	@echo "  release           - Create new httpx release (default: patch)"
+	@echo "  release-patch     - Create httpx patch release"
+	@echo "  release-minor     - Create httpx minor release"
+	@echo "  release-major     - Create httpx major release"
+	@echo "  release-dry-run   - Test httpx release without committing"
+	@echo ""
+	@echo "Current version: v$(VERSION)"
+
+
+
+# Install development tools
+install-tools:
+	@echo "Installing development tools..."
+	@command -v golangci-lint >/dev/null 2>&1 || \
+		(echo "Installing golangci-lint..." && \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
+	@echo "Tools installed successfully"
+
+
+# Version management
+version:
+	@echo "Current version: v$(VERSION)"
+
+validate-version:
+	@./scripts/validate-version.sh
+
+update-deps:
+	@./scripts/update-deps.sh
+
+bump-patch:
+	@./scripts/bump-version.sh patch
+
+bump-minor:
+	@./scripts/bump-version.sh minor
+
+bump-major:
+	@./scripts/bump-version.sh major
+
+# Release management
+release:
+	@./scripts/release.sh $(or $(TYPE),patch)
+
+release-dry-run:
+	@DRY_RUN=true ./scripts/release.sh $(or $(TYPE),patch)
+
+release-patch:
+	@./scripts/release.sh patch
+
+release-minor:
+	@./scripts/release.sh minor
+
+release-major:
+	@./scripts/release.sh major
+
+
