@@ -23,7 +23,7 @@ type Result struct {
 
 // Module provides the metrics module for fx
 func Module() fx.Option {
-	return fx.Module("metrics",
+	return fx.Module("metricsx",
 		fx.Provide(
 			NewConfig,
 			NewMetrics,
