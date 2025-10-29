@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix: update go.mod / module metadata (from release)
 
-## [0.1.5] - 2025-10-26 20:50:34 +0700
+## [0.1.5] - 2025-10-26
 
 ### Added
 - Release version 0.1.5
