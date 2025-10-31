@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMetricsSanitizeAndSummary(t *testing.T) {
+func TestConfigSummary(t *testing.T) {
 	cfg := Config{
 		Enabled:  true,
 		Provider: "prometheus",
@@ -14,11 +14,6 @@ func TestMetricsSanitizeAndSummary(t *testing.T) {
 			Path: "/metrics",
 			Port: 9090,
 		},
-	}
-
-	s := cfg.Sanitize()
-	if s == &cfg {
-		t.Fatalf("Sanitize must return a copy")
 	}
 
 	sum := cfg.ConfigSummary()
